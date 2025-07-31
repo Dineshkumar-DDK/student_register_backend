@@ -64,6 +64,24 @@ const updateFunction = async (id, updatedData) => {
   return result;
 };
 
+
+
+// ----------- Read One Function ----------- //
+const readOneFunction = async (id) => {
+  const { db } = await connectToDB();
+
+  if (typeof id !== 'string') {
+    throw new Error("Expected id to be a string.");
+  }
+
+  const objectId = new ObjectId(id);
+
+  const student = await db.collection("student_details").findOne({ _id: objectId });
+
+  return student;
+};
+
+
 // app.use("/info", infoRouter);
 
 // ---------- get api ---------- //
@@ -128,6 +146,24 @@ app.delete("/:id", async (req, res) => {
 });
 
 
+// ----------- GET /:id Endpoint ----------- //
+app.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const student = await readOneFunction(id);
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.json(student);
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({ error: "Failed to fetch student" });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
@@ -139,7 +175,7 @@ async function startServer() {
 
 startServer();
 
-// // Start server only after DB is connected
+// Start server only after DB is connected
 // async function startServer() {
 //   // try {
 //   await connectToDB();
